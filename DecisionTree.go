@@ -33,6 +33,29 @@ func (t *DecisionTree) Walk(item []float64) float64 {
 	}
 }
 
+func (t *DecisionTree) String() string {
+	return getString(t, 0)
+}
+
+func getString(t *DecisionTree, depth int) string {
+	out := ""
+	for i := 0; i < depth; i++ {
+		out += fmt.Sprint(" ")
+	}
+	if t.Low == nil && t.High == nil {
+		out += fmt.Sprintf("Value: %f\n", t.value)
+	} else {
+		out += fmt.Sprintf("Column: %d    Cutoff: %f\n", t.column, t.cutoff)
+	}
+	if t.Low != nil {
+		out += getString(t.Low, depth+1)
+	}
+	if t.High != nil {
+		out += getString(t.High, depth+1)
+	}
+	return out
+}
+
 // Given a column of data, find the cutoff that gives the
 // smallest sum of RMS
 func findOptimalCut(column, target []float64) (bestCut, bestRMS float64) {
