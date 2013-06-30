@@ -1,6 +1,8 @@
 // Utilities used in the decision tree
 package decisiontree
 
+import "math"
+
 // pair datatype so that we can sort by one field
 // and the other goes along for the ride
 type pairFloat64 struct {
@@ -40,4 +42,20 @@ func Dedupe(l pairFloat64Collection) []pairFloat64 {
 		}
 	}
 	return out
+}
+
+func FloatEqual(x, y, eps float64) bool {
+	return math.Abs(x-y) < eps
+}
+
+func SliceEqual(x, y []float64) bool {
+	if len(x) != len(y) {
+		return false
+	}
+	for i := 0; i < len(x); i++ {
+		if x[i] != y[i] {
+			return false
+		}
+	}
+	return true
 }
