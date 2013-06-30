@@ -97,10 +97,11 @@ func findOptimalCut(column, target []float64) (bestCut, bestRMS float64) {
 	return bestCut, bestRMS
 }
 
-func createDecisionNode(data [][]float64, target []float64, minSamples int) *DecisionTree {
+func createDecisionNode(data [][]float64, target []float64, minSamples int, ch chan *DecisionTree) {
 	// ending conditions
 	if (len(target) < minSamples) || (stats.RMS(target) == 0) {
-		return &DecisionTree{stats.Mean(target), 0, 0., nil, nil}
+		ch <- &DecisionTree{stats.Mean(target), 0, 0., nil, nil}
+		return
 	}
 	// Find the best variable to split on
 	bestRMS := 1e30
@@ -132,13 +133,32 @@ func createDecisionNode(data [][]float64, target []float64, minSamples int) *Dec
 		}
 	}
 
+	chLow := make(chan *DecisionTree)
+	chHigh := make(chan *DecisionTree)
+
+	go createDecisionNode(lowData, lowTarget, minSamples, chLow)
+	go createDecisionNode(highData, highTarget, minSamples, chHigh)
+
+	var treeLow, treeHigh *DecisionTree
+
+	for i := 0; i < 2; i++ {
+		select {
+		case t := <-chLow:
+			treeLow = t
+		case t := <-chHigh:
+			treeHigh = t
+		}
+	}
+
 	node := DecisionTree{stats.Mean(target), bestCol, bestCut,
-		createDecisionNode(lowData, lowTarget, minSamples), createDecisionNode(highData, highTarget, minSamples)}
-	return &node
+		treeLow, treeHigh}
+	ch <- &node
 }
 
 // CreateDecisionTree builds a decision tree from training data
 // returns a pointer to the created tree
 func CreateDecisionTree(data [][]float64, target []float64, minSamples int) *DecisionTree {
-	return createDecisionNode(data, target, minSamples)
+	ch := make(chan *DecisionTree)
+	go createDecisionNode(data, target, minSamples, ch)
+	return <-ch
 }

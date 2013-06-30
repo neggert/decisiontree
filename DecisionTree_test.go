@@ -1,7 +1,6 @@
 package decisiontree
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -41,13 +40,13 @@ func TestFindOptimalCutNoVarianceTarget(t *testing.T) {
 	}
 }
 
-func TestCreateDecisionNode(t *testing.T) {
+func TestCreateDecisionTree(t *testing.T) {
 	xvals := [][]float64{{1, 2},
 		{2, 4},
 		{1, 6},
 		{2, 8}}
 	yvals := []float64{0, 1, 0, 1}
-	tree := createDecisionNode(xvals, yvals, 2)
+	tree := CreateDecisionTree(xvals, yvals, 2)
 	if tree.value != 0.5 {
 		t.Errorf("Expected node value of 0.5, found %f", tree.value)
 	}
